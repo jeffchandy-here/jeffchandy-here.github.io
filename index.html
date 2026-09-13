@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jeff Chandy — Security Operations & Incident Response</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #FAFAF8;
+    --ink: #14161A;
+    --muted: #62666D;
+    --line: #DEDCD3;
+    --accent: #1F5F5B;
+    --accent-soft: #E7EFEE;
+    --tagbg: #F0EEE7;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    line-height:1.6;
+    font-size:16px;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent); text-decoration:none; border-bottom:1px solid transparent;}
+  a:hover{border-bottom-color:var(--accent);}
+  .wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+  h1,h2,h3{font-family:'Space Grotesk',sans-serif; font-weight:600; margin:0;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  hr.rule{border:none; border-top:1px solid var(--line); margin:2.5rem 0;}
+
+  /* header */
+  header{padding:64px 0 40px;}
+  header .status{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--accent);
+    background:var(--accent-soft); padding:4px 10px; border-radius:3px; margin-bottom:22px;
+  }
+  header .status .dot{
+    width:6px;height:6px;border-radius:50%;background:var(--accent);
+    animation:pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  header h1{font-size:2.4rem; letter-spacing:-0.01em;}
+  header p.role{font-size:1.05rem; color:var(--muted); margin-top:8px;}
+  .metaline{
+    margin-top:28px; font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--muted);
+    display:flex; flex-wrap:wrap; gap:4px 22px;
+  }
+  .metaline span b{color:var(--ink); font-weight:500;}
+
+  /* section labels */
+  .seclabel{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted);
+    margin-bottom:14px;
+  }
+  section h2{font-size:1.3rem; margin-bottom:6px;}
+  section > p.lede{color:var(--muted); margin-top:0; margin-bottom:22px; max-width:62ch;}
+
+  /* case files (projects) */
+  .case{
+    border-left:2px solid var(--line);
+    padding:4px 0 4px 20px;
+    margin-bottom:28px;
+  }
+  .case.open{border-left-color:var(--accent);}
+  .case-head{display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap;}
+  .case-head h3{font-size:1.02rem;}
+  .case-id{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted);}
+  .case-tags{margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;}
+  .tag{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; background:var(--tagbg);
+    color:var(--muted); padding:3px 8px; border-radius:3px;
+  }
+  .case p{margin:10px 0 0; color:#3a3d42; font-size:14.5px; max-width:64ch;}
+  .case .links{margin-top:10px; font-size:13px;}
+
+  /* experience */
+  .job{margin-bottom:26px;}
+  .job-head{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:baseline;}
+  .job-head h3{font-size:1.02rem;}
+  .job-head .dates{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); white-space:nowrap;}
+  .job-org{color:var(--muted); font-size:14px; margin-top:2px;}
+  .job ul{margin:10px 0 0; padding-left:18px; font-size:14.5px; color:#3a3d42;}
+  .job li{margin-bottom:5px;}
+
+  /* certs timeline */
+  .certs{border-left:1px solid var(--line); padding-left:20px;}
+  .cert{position:relative; margin-bottom:18px;}
+  .cert::before{
+    content:''; position:absolute; left:-24.5px; top:6px;
+    width:7px; height:7px; border-radius:50%; background:var(--ink);
+  }
+  .cert.pending::before{background:var(--bg); border:1.5px solid var(--muted);}
+  .cert-year{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted);}
+  .cert-name{font-weight:500; margin-top:2px;}
+  .cert-issuer{font-size:13.5px; color:var(--muted);}
+
+  /* skills */
+  .skillgrid{display:grid; grid-template-columns:1fr 1fr; gap:22px 32px;}
+  .skillgroup h3{font-size:13px; font-family:'IBM Plex Mono',monospace; font-weight:500; color:var(--muted); margin-bottom:8px;}
+  .skillgroup p{margin:0; font-size:14.5px;}
+
+  footer{padding:48px 0 72px; color:var(--muted); font-size:13.5px;}
+  footer a{color:var(--ink);}
+
+  @media (max-width:600px){
+    .skillgrid{grid-template-columns:1fr;}
+    header{padding:40px 0 28px;}
+    header h1{font-size:1.9rem;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="status"><span class="dot"></span>open to new opportunities</div>
+    <h1>Jeff Chandy</h1>
+    <p class="role">Security Operations &amp; Incident Response — building toward Blue Team / Purple Team &amp; detection engineering</p>
+    <div class="metaline">
+      <span>Based in <b>Bengaluru, India</b></span>
+      <span><a href="mailto:jeffchandy99@gmail.com">jeffchandy99@gmail.com</a></span>
+      <span><a href="https://linkedin.com" target="_blank" rel="noopener">LinkedIn</a></span>
+      <span><a href="https://github.com" target="_blank" rel="noopener">GitHub</a></span>
+    </div>
+  </header>
+
+  <hr class="rule">
+
+  <section id="about">
+    <div class="seclabel">summary</div>
+    <p class="lede">
+      Four years across threat hunting, malware analysis, and incident response — currently running
+      detection engineering and IR tooling in a CrowdStrike-centric SecOps program. Moving deliberately
+      into Blue Team / Purple Team work: building detections, validating them against real adversary
+      behavior, and closing the loop between the two.
+    </p>
+  </section>
+
+  <hr class="rule">
+
+  <section id="projects">
+    <div class="seclabel">case files — selected projects</div>
+    <h2>Projects</h2>
+    <p class="lede">Tooling and detection work pulled from day-to-day IR and detection engineering.</p>
+
+    <div class="case open">
+      <div class="case-head">
+        <h3>Credential exposure scanner</h3>
+        <span class="case-id mono">CASE-01</span>
+      </div>
+      <div class="case-tags">
+        <span class="tag">TruffleHog</span>
+        <span class="tag">AWS</span>
+        <span class="tag">GCP</span>
+        <span class="tag">GitHub</span>
+      </div>
+      <p>
+        A TruffleHog-based tool that validates live AWS, GCP, and GitHub credentials found in exposed
+        code or logs in under 60 seconds — turning a raw secret hit into a confirmed, actionable finding
+        instead of a manual verification step.
+      </p>
+    </div>
+
+    <div class="case open">
+      <div class="case-head">
+        <h3>AI-assisted alert triage</h3>
+        <span class="case-id mono">CASE-02</span>
+      </div>
+      <div class="case-tags">
+        <span class="tag">Claude</span>
+        <span class="tag">CrowdStrike</span>
+        <span class="tag">GCP logging</span>
+      </div>
+      <p>
+        Built LLM-assisted workflows to help triage CrowdStrike alerts and GCP logs — surfacing anomalies
+        and suspicious activity faster than manual first-pass review, so analyst time goes to the alerts
+        that actually need judgment.
+      </p>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <section id="experience">
+    <div class="seclabel">experience</div>
+    <h2>Where I've worked</h2>
+
+    <div class="job">
+      <div class="job-head">
+        <h3>Senior Security Operations &amp; Incident Response Analyst</h3>
+        <span class="dates">Mar 2025 — present</span>
+      </div>
+      <div class="job-org">Unity</div>
+      <ul>
+        <li>Develop and fine-tune detection rules across endpoints and cloud</li>
+        <li>Lead SecOps-scoped vulnerability triage in Wiz and escalate confirmed compromises to formal IR</li>
+        <li>Automate IR playbooks and alert triage in Torq (XSOAR); build Terraform pipelines for SecOps scale</li>
+        <li>Own SOP creation and log onboarding for the team</li>
+      </ul>
+    </div>
+
+    <div class="job">
+      <div class="job-head">
+        <h3>Threat Hunter</h3>
+        <span class="dates">Nov 2022 — Mar 2025</span>
+      </div>
+      <div class="job-org">FICO</div>
+      <ul>
+        <li>Proactive threat hunting using MDATP, Cortex XDR, and Splunk</li>
+        <li>Authored detections using MITRE ATT&amp;CK and TaHiTI; ran internal pentests across endpoint, cloud, and AD</li>
+        <li>Built threat intelligence from OSINT, TECHINT, and darknet sources</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <section id="certs">
+    <div class="seclabel">certifications</div>
+    <h2>Certifications &amp; path forward</h2>
+    <div class="certs">
+      <div class="cert pending">
+        <div class="cert-year mono">in progress</div>
+        <div class="cert-name">GCIH — GIAC Certified Incident Handler</div>
+      </div>
+      <div class="cert pending">
+        <div class="cert-year mono">in progress</div>
+        <div class="cert-name">PJPT — Practical Junior Penetration Tester</div>
+        <div class="cert-issuer">TCM Security</div>
+      </div>
+      <div class="cert">
+        <div class="cert-year mono">2025</div>
+        <div class="cert-name">PMRP — Practical Malware Research Professional</div>
+        <div class="cert-issuer">TCM Security</div>
+      </div>
+      <div class="cert">
+        <div class="cert-year mono">2024</div>
+        <div class="cert-name">AWS Certified Cloud Practitioner</div>
+        <div class="cert-issuer">AWS</div>
+      </div>
+      <div class="cert">
+        <div class="cert-year mono">2023</div>
+        <div class="cert-name">Certified Malware Analyst</div>
+        <div class="cert-issuer">RedTeam Hacker Academy</div>
+      </div>
+      <div class="cert">
+        <div class="cert-year mono">2023</div>
+        <div class="cert-name">Mastering Threat Intelligence</div>
+        <div class="cert-issuer">EC-Council</div>
+      </div>
+      <div class="cert">
+        <div class="cert-year mono">2022</div>
+        <div class="cert-name">Practical Ethical Hacking</div>
+        <div class="cert-issuer">TCM Security</div>
+      </div>
+      <div class="cert">
+        <div class="cert-year mono">2021</div>
+        <div class="cert-name">Certified Ethical Hacker (CEH)</div>
+        <div class="cert-issuer">EC-Council</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <section id="skills">
+    <div class="seclabel">skills</div>
+    <h2>Tools &amp; technologies</h2>
+    <div class="skillgrid">
+      <div class="skillgroup">
+        <h3>EDR / XDR / SIEM</h3>
+        <p>CrowdStrike Falcon, MDATP, Cortex XDR, Sumo Logic, Splunk</p>
+      </div>
+      <div class="skillgroup">
+        <h3>Cloud security</h3>
+        <p>AWS, Azure, GCP, Orca, Wiz, Adaptive Shield</p>
+      </div>
+      <div class="skillgroup">
+        <h3>Detection &amp; threat hunting</h3>
+        <p>MITRE ATT&amp;CK, Sigma, Atomic Red Team, TaHiTI</p>
+      </div>
+      <div class="skillgroup">
+        <h3>Identity &amp; endpoint</h3>
+        <p>Okta, Entra ID, Intune, SimpleMDM, Palo Alto Panorama, Zscaler</p>
+      </div>
+      <div class="skillgroup">
+        <h3>Automation &amp; SOAR</h3>
+        <p>Torq (XSOAR), Terraform, Python, PowerShell, Bash</p>
+      </div>
+      <div class="skillgroup">
+        <h3>Other</h3>
+        <p>Malware analysis &amp; reverse engineering, OSINT/TECHINT, internal pentesting</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <footer>
+    Jeff Chandy · <a href="mailto:jeffchandy99@gmail.com">jeffchandy99@gmail.com</a> · <a href="https://linkedin.com" target="_blank" rel="noopener">LinkedIn</a> · <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
+  </footer>
+
+</div>
+</body>
+</html>
