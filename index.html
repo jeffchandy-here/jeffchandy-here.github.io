@@ -227,18 +227,20 @@
 
     <div class="case open">
       <div class="case-head">
-        <h3>AI-assisted alert triage</h3>
+        <h3>AI-assisted phishing triage</h3>
         <span class="case-id mono">CASE-02</span>
       </div>
       <div class="case-tags">
         <span class="tag">Claude</span>
-        <span class="tag">CrowdStrike</span>
-        <span class="tag">GCP logging</span>
+        <span class="tag">Phishing</span>
+        <span class="tag">Email headers</span>
+        <span class="tag">IOC enrichment</span>
       </div>
       <p>
-        Built LLM-assisted workflows to help triage CrowdStrike alerts and GCP logs — surfacing anomalies
-        and suspicious activity faster than manual first-pass review, so analyst time goes to the alerts
-        that actually need judgment.
+        LLM-assisted workflow for triaging reported phishing emails. It parses headers, URLs and
+        attachments, enriches the indicators, and gives each report a verdict with a short reasoning
+        summary, so analysts review a pre-built case instead of starting from a raw email. Guardrails keep
+        the model in an assistive role, and a human makes the final call.
       </p>
     </div>
 
