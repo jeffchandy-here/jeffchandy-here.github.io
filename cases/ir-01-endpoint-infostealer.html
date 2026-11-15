@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fake AI tool download to fileless infostealer: endpoint compromise — Jeff Chandy</title>
+<meta name="description" content="An employee followed a fake install page for an AI coding tool and pasted a command into PowerShell. I rebuilt the full attack chain from EDR telemetry, found what was at risk, and drove containment, credential rotation and new detections.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#FAFAF8;--ink:#14161A;--muted:#62666D;--line:#DEDCD3;--accent:#1F5F5B;--accent-soft:#E7EFEE;--tagbg:#F0EEE7;--codebg:#F2F1EC;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;line-height:1.65;font-size:16px;-webkit-font-smoothing:antialiased;}
+  a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent;}
+  a:hover{border-bottom-color:var(--accent);}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 24px;}
+  h1,h2,h3{font-family:'Space Grotesk',sans-serif;font-weight:600;margin:0;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  nav.topnav{position:sticky;top:0;z-index:10;background:rgba(250,250,248,0.88);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);}
+  nav.topnav .navwrap{max-width:760px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;}
+  nav.topnav .brand{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14.5px;color:var(--ink);border-bottom:none;}
+  nav.topnav .back{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--muted);border-bottom:none;}
+  nav.topnav .back:hover{color:var(--accent);}
+  header.case-hero{padding:48px 0 28px;border-bottom:1px solid var(--line);}
+  .case-id{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);background:var(--accent-soft);padding:3px 9px;border-radius:3px;display:inline-block;margin-bottom:16px;}
+  header.case-hero h1{font-size:2rem;letter-spacing:-0.01em;line-height:1.25;}
+  header.case-hero p.sub{color:var(--muted);margin:12px 0 0;max-width:60ch;}
+  .case-tags{margin-top:18px;display:flex;flex-wrap:wrap;gap:6px;}
+  .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--tagbg);color:var(--muted);padding:3px 8px;border-radius:3px;}
+  dl.facts{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:20px 0 0;font-size:14px;}
+  dl.facts dt{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--muted);padding-top:2px;}
+  dl.facts dd{margin:0;}
+  main section{padding:30px 0 6px;}
+  main h2{font-size:1.25rem;margin-bottom:12px;}
+  main p,main li{color:#33363b;font-size:15.5px;}
+  main p{max-width:66ch;margin:0 0 12px;}
+  main ul{padding-left:20px;margin:0 0 12px;}
+  main li{margin-bottom:7px;max-width:64ch;}
+  table{border-collapse:collapse;width:100%;font-size:14.5px;margin:4px 0 12px;}
+  .tablewrap{overflow-x:auto;}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;color:var(--muted);width:30%;}
+  ol.steps{list-style:none;padding:0;margin:0;counter-reset:step;}
+  ol.steps > li{counter-increment:step;position:relative;padding:0 0 18px 46px;margin:0;max-width:none;border-left:1px solid var(--line);margin-left:14px;padding-left:32px;}
+  ol.steps > li:last-child{border-left-color:transparent;}
+  ol.steps > li::before{content:counter(step);position:absolute;left:-14px;top:0;width:27px;height:27px;border-radius:50%;background:var(--bg);border:1px solid var(--accent);color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:12.5px;display:flex;align-items:center;justify-content:center;}
+  ol.steps h3{font-size:1rem;margin:2px 0 6px;}
+  ol.steps p{margin:0 0 8px;}
+  pre{background:var(--codebg);border:1px solid var(--line);border-radius:4px;padding:12px 14px;overflow-x:auto;font-family:'IBM Plex Mono',monospace;font-size:12.5px;line-height:1.55;margin:6px 0 10px;color:#2a2d31;}
+  .outcome li::marker{color:var(--accent);}
+  footer{padding:40px 0 64px;margin-top:30px;border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+  @media (max-width:600px){header.case-hero h1{font-size:1.6rem;}dl.facts{grid-template-columns:1fr;gap:2px;}dl.facts dd{margin-bottom:8px;}}
+</style>
+</head>
+<body>
+<nav class="topnav"><div class="navwrap">
+  <a class="brand" href="../index.html">JEFF CHANDY</a>
+  <a class="back" href="../index.html#investigations">Back to all work</a>
+</div></nav>
+<div class="wrap">
+
+<header class="case-hero">
+  <span class="case-id">IR-01</span>
+  <h1>Fake AI tool download to fileless infostealer: endpoint compromise</h1>
+  <p class="sub">An employee followed a fake install page for an AI coding tool and pasted a command into PowerShell. I rebuilt the full attack chain from EDR telemetry, found what was at risk, and drove containment, credential rotation and new detections.</p>
+  <div class="case-tags"><span class="tag">EDR telemetry</span><span class="tag">Process tree analysis</span><span class="tag">ClickFix</span><span class="tag">mshta</span><span class="tag">Credential rotation</span></div>
+  <dl class="facts"><dt>Type</dt><dd>Real incident, sanitized</dd><dt>Role</dt><dd>Co-lead; owned root cause and attack-chain reconstruction</dd><dt>Outcome</dt><dd>Contained, credentials rotated, detections added</dd></dl>
+</header>
+<main>
+<section><h2>Overview</h2><p>An employee searched for an AI coding tool, clicked a malicious ad, and landed on a convincing fake download page. The page put a command on their clipboard and told them to paste it into a terminal to "install" the tool.</p><p>That one paste launched a fileless payload that ran entirely in memory. The compromise only surfaced days later, when the employee got a notice that their browser-saved passwords had leaked. I reconstructed what ran, what it could reach, and what had to be rotated.</p></section>
+<section><h2>Why this matters for an IR analyst</h2><ul><li><strong>ClickFix is one of the most common initial-access techniques right now.</strong> There is no exploit and no attachment, just a user pasting a command, which slips past most email and web controls.</li><li><strong>Fileless means the evidence is in telemetry, not on disk.</strong> The whole case rests on reading process trees and command history well.</li><li><strong>Scoping drives the response.</strong> Knowing exactly what the payload could reach decides which credentials to rotate and how far to go.</li><li><strong>Interview answer:</strong> "Walk me through an endpoint compromise from detection to closure" is a standard IR question. This page is a worked answer.</li></ul></section>
+<section><h2>Scenario</h2><div class="tablewrap"><table><tr><th scope="row">Trigger</th><td>Employee report of a leaked-password notice, matched to EDR detections on their laptop</td></tr><tr><th scope="row">Initial access</th><td>Malicious search ad leading to a fake AI tool download page (ClickFix lure)</td></tr><tr><th scope="row">Execution</th><td>User pasted a command into PowerShell, which launched mshta to fetch and run a remote HTA payload in memory</td></tr><tr><th scope="row">Environment</th><td>Corporate Windows laptop, SSO-joined, with a Git client holding live sessions to internal code hosting</td></tr><tr><th scope="row">Goal</th><td>Rebuild the attack chain, scope what was exposed, contain, and close the detection gap</td></tr></table></div></section>
+<section><h2>Walkthrough</h2><ol class="steps">
+<li><h3>Contain first</h3><p>Once the employee's report was matched to EDR detections on their laptop, the host was network-contained from the EDR console and a full wipe and reimage was requested from IT.</p></li>
+<li><h3>Rebuild the process tree</h3><p>I pulled process telemetry for the infection window and walked the chain: browser activity on the lure page, then a terminal and PowerShell opened by the user, then mshta fetching a remote payload. There were two waves, because the user ran the command a second time when nothing seemed to happen.</p><pre><code>#event_simpleName=ProcessRollup2 FileName=&quot;mshta.exe&quot;
+| ParentBaseFileName=&quot;powershell.exe&quot;
+| table([@timestamp, ParentBaseFileName, FileName, CommandLine])</code></pre><p>mshta is a signed Windows binary (a "living off the land" tool), so the attack used no malware file at the moment of execution.</p></li>
+<li><h3>Confirm exactly what was typed</h3><p>EDR command-history events showed each PowerShell session ran a single command: the pasted lure command, word for word. That ruled out an attacker typing anything else on the machine.</p></li>
+<li><h3>Look for defense evasion</h3><p>The payload tried to open a handle to the EDR sensor process (an attempt to tamper with it, which failed) and later wrote a binary with a misleading file extension. Both went on the timeline as evasion steps.</p></li>
+<li><h3>Hunt for credential harvesting</h3><p>I audited every non-routine process across the window, filtering for classic credential-dumping behaviour: LSASS access, procdump, and command-line download tools. None was found. That, plus browser activity in a short window after execution, pointed to theft of browser-stored data rather than OS credential dumping.</p><pre><code>#event_simpleName=ProcessRollup2
+| FileName=/(procdump|rundll32|curl|certutil)\.exe/i
+   OR CommandLine=/lsass/i
+| table([@timestamp, ParentBaseFileName, FileName, CommandLine])</code></pre></li>
+<li><h3>Scope what was at risk</h3><p>From the user's context, the payload could reach browser-saved passwords and session cookies, live SSO session tokens, SSH keys used by the Git client, and the Windows credential store. That list decided the rotation plan.</p></li>
+<li><h3>Rotate everything in scope</h3><p>The user's SSO password was reset and all active sessions revoked, browser-saved and personal passwords were changed, and Git access tokens and SSH keys were rotated. The employee and their manager got a written summary with required actions.</p></li>
+<li><h3>Attribute and enrich</h3><p>The lure and delivery matched a publicly reported infostealer campaign that uses fake AI tool sites to target developers. A sandbox run of the lure confirmed the clipboard-injection behaviour.</p></li>
+<li><h3>Close the detection gap</h3><p>IOCs and behavioural patterns (domains, payload URL, the PowerShell-to-mshta chain) went into the EDR for automated detection. A prevention-gap review was raised with the EDR vendor, and credential-leak monitoring confirmed no exposure of corporate accounts or the device.</p></li>
+</ol></section>
+<section><h2>Outcome</h2><ul class="outcome"><li>Full attack chain reconstructed from telemetry, from lure page to in-memory payload</li><li>Hands-on-keyboard attacker activity ruled out from command history</li><li>Credential dumping ruled out; browser data identified as the likely loss</li><li>Host contained and reimaged; SSO, browser, Git and SSH credentials rotated</li><li>New behavioural detections in place and a prevention-gap review raised with the EDR vendor</li></ul></section>
+</main>
+<footer><span>Jeff Chandy · <a href="mailto:jeffchandy99@gmail.com">jeffchandy99@gmail.com</a></span><a href="../index.html#investigations">Back to all work</a></footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API IDOR exposing customer data: proving who else used it — Jeff Chandy</title>
+<meta name="description" content="A researcher found that any logged-in user could read other customers&#x27; records through a commerce API. The fix shipped the same day. I led the investigation into whether anyone else had used it, with logs that didn&#x27;t record what we needed by default.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#FAFAF8;--ink:#14161A;--muted:#62666D;--line:#DEDCD3;--accent:#1F5F5B;--accent-soft:#E7EFEE;--tagbg:#F0EEE7;--codebg:#F2F1EC;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;line-height:1.65;font-size:16px;-webkit-font-smoothing:antialiased;}
+  a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent;}
+  a:hover{border-bottom-color:var(--accent);}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 24px;}
+  h1,h2,h3{font-family:'Space Grotesk',sans-serif;font-weight:600;margin:0;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  nav.topnav{position:sticky;top:0;z-index:10;background:rgba(250,250,248,0.88);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);}
+  nav.topnav .navwrap{max-width:760px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;}
+  nav.topnav .brand{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14.5px;color:var(--ink);border-bottom:none;}
+  nav.topnav .back{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--muted);border-bottom:none;}
+  nav.topnav .back:hover{color:var(--accent);}
+  header.case-hero{padding:48px 0 28px;border-bottom:1px solid var(--line);}
+  .case-id{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);background:var(--accent-soft);padding:3px 9px;border-radius:3px;display:inline-block;margin-bottom:16px;}
+  header.case-hero h1{font-size:2rem;letter-spacing:-0.01em;line-height:1.25;}
+  header.case-hero p.sub{color:var(--muted);margin:12px 0 0;max-width:60ch;}
+  .case-tags{margin-top:18px;display:flex;flex-wrap:wrap;gap:6px;}
+  .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--tagbg);color:var(--muted);padding:3px 8px;border-radius:3px;}
+  dl.facts{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:20px 0 0;font-size:14px;}
+  dl.facts dt{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--muted);padding-top:2px;}
+  dl.facts dd{margin:0;}
+  main section{padding:30px 0 6px;}
+  main h2{font-size:1.25rem;margin-bottom:12px;}
+  main p,main li{color:#33363b;font-size:15.5px;}
+  main p{max-width:66ch;margin:0 0 12px;}
+  main ul{padding-left:20px;margin:0 0 12px;}
+  main li{margin-bottom:7px;max-width:64ch;}
+  table{border-collapse:collapse;width:100%;font-size:14.5px;margin:4px 0 12px;}
+  .tablewrap{overflow-x:auto;}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;color:var(--muted);width:30%;}
+  ol.steps{list-style:none;padding:0;margin:0;counter-reset:step;}
+  ol.steps > li{counter-increment:step;position:relative;padding:0 0 18px 46px;margin:0;max-width:none;border-left:1px solid var(--line);margin-left:14px;padding-left:32px;}
+  ol.steps > li:last-child{border-left-color:transparent;}
+  ol.steps > li::before{content:counter(step);position:absolute;left:-14px;top:0;width:27px;height:27px;border-radius:50%;background:var(--bg);border:1px solid var(--accent);color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:12.5px;display:flex;align-items:center;justify-content:center;}
+  ol.steps h3{font-size:1rem;margin:2px 0 6px;}
+  ol.steps p{margin:0 0 8px;}
+  pre{background:var(--codebg);border:1px solid var(--line);border-radius:4px;padding:12px 14px;overflow-x:auto;font-family:'IBM Plex Mono',monospace;font-size:12.5px;line-height:1.55;margin:6px 0 10px;color:#2a2d31;}
+  .outcome li::marker{color:var(--accent);}
+  footer{padding:40px 0 64px;margin-top:30px;border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+  @media (max-width:600px){header.case-hero h1{font-size:1.6rem;}dl.facts{grid-template-columns:1fr;gap:2px;}dl.facts dd{margin-bottom:8px;}}
+</style>
+</head>
+<body>
+<nav class="topnav"><div class="navwrap">
+  <a class="brand" href="../index.html">JEFF CHANDY</a>
+  <a class="back" href="../index.html#investigations">Back to all work</a>
+</div></nav>
+<div class="wrap">
+
+<header class="case-hero">
+  <span class="case-id">IR-02</span>
+  <h1>API IDOR exposing customer data: proving who else used it</h1>
+  <p class="sub">A researcher found that any logged-in user could read other customers&#x27; records through a commerce API. The fix shipped the same day. I led the investigation into whether anyone else had used it, with logs that didn&#x27;t record what we needed by default.</p>
+  <div class="case-tags"><span class="tag">API gateway logs</span><span class="tag">BigQuery</span><span class="tag">Bug bounty</span><span class="tag">GDPR</span><span class="tag">Log analysis</span></div>
+  <dl class="facts"><dt>Type</dt><dd>Real incident, sanitized</dd><dt>Role</dt><dd>Investigation lead</dd><dt>Outcome</dt><dd>All other access attributed; legal cleared notification</dd></dl>
+</header>
+<main>
+<section><h2>Overview</h2><p>A bug bounty researcher reported an insecure direct object reference (IDOR) in a commerce API. The endpoint checked that a login token was valid, but never checked that it belonged to the user being requested. With sequential user IDs, anyone with a free account could read any customer's contact details.</p><p>Engineering fixed it the same day. My job was the part that decides whether customers must be notified: <strong>did anyone other than the researcher read customer data, and over what period?</strong></p></section>
+<section><h2>Why this matters for an IR analyst</h2><ul><li><strong>A bug bounty report with personal data is a privacy incident.</strong> The legal notification decision rests entirely on the IR analyst's log evidence.</li><li><strong>The logs you need are often not the logs you have.</strong> Finding the right source and proving what a field means is half the work.</li><li><strong>Attribution beats volume.</strong> The case closes only when every unexplained caller is explained.</li><li><strong>Interview answer:</strong> "A researcher found a data exposure bug. How do you prove no one else exploited it?" This page is the answer.</li></ul></section>
+<section><h2>Scenario</h2><div class="tablewrap"><table><tr><th scope="row">Trigger</th><td>Bug bounty report: authenticated IDOR on a commerce API</td></tr><tr><th scope="row">Flaw</th><td>Token validated, but token owner never compared to the requested user ID (broken object-level authorization)</td></tr><tr><th scope="row">Data at risk</th><td>Customer contact details: name, email, phone, postal address</td></tr><tr><th scope="row">Goal</th><td>Verify the fix, find the real exposure window, attribute every cross-user read, and support the legal decision</td></tr></table></div></section>
+<section><h2>Walkthrough</h2><ol class="steps">
+<li><h3>Verify the fix independently</h3><p>With my own test account, I requested another user's record. It now returned 403. That check later doubled as a known event to validate the logs against.</p></li>
+<li><h3>Find where the logs actually are</h3><p>The route turned out to be served by a different gateway than assumed, so the usual access logs had nothing. It also had no audit logging of the caller's identity. I worked with the gateway team to extract caller-level data from what that gateway did record.</p></li>
+<li><h3>Prove what the log fields mean</h3><p>Before trusting the caller field, I matched it against my own fix-verification request. It showed up correctly as one failed cross-user request from my account, which confirmed the field identified individual accounts.</p></li>
+<li><h3>Build a cross-user view per caller</h3><p>The key question per caller was how often they asked for a record that wasn't their own, and how often that succeeded.</p><pre><code>SELECT caller,
+       COUNT(*)                                        AS requests,
+       COUNT(DISTINCT target_id)                       AS targets,
+       COUNTIF(target_id != caller_id)                 AS cross_user,
+       COUNTIF(target_id != caller_id AND status=200)  AS cross_user_ok
+FROM   gateway_requests
+WHERE  route = &#x27;/users/{id}&#x27;
+GROUP  BY caller
+ORDER  BY cross_user_ok DESC</code></pre></li>
+<li><h3>Pin down the real exposure window</h3><p>Commit history showed the route had shipped without the check long before the report. But no frontend called it until a later product launch, and monthly request counts confirmed the route was essentially unused before then. The practical exposure window was much shorter than the code's age.</p></li>
+<li><h3>Attribute every caller</h3><p>Each caller with cross-user reads was explained: the researcher's accounts, a backend service reading records by design, an internal verification account, and blocked attempts. One unknown account remained. I traced it to a tester reading its own sibling account from the same IP, so no customer data was involved.</p></li>
+<li><h3>Use the baseline</h3><p>Normal traffic on the route was tiny, so enumeration stood out sharply. Only the researcher's account showed it.</p></li>
+<li><h3>State the limits</h3><p>The report listed what the evidence could not show: log retention didn't cover the earliest period the route existed, the IP data was sampled, and related org-level routes were out of scope. Each limit came with the reasoning for why it didn't change the conclusion.</p></li>
+<li><h3>Hand legal a clear answer</h3><p>Legal received a short summary of what happened, what the logs show, and what they can't show. Their no-notification decision was conditional on no non-researcher access, and the final attribution met that condition.</p></li>
+</ol></section>
+<section><h2>Outcome</h2><ul class="outcome"><li>Fix independently verified</li><li>Correct log source found and its fields validated against a known event</li><li>Real exposure window established from code history and request volume</li><li>Every cross-user read attributed; no customer data accessed by anyone other than the researcher</li><li>Legal confirmed no notification required</li></ul></section>
+</main>
+<footer><span>Jeff Chandy · <a href="mailto:jeffchandy99@gmail.com">jeffchandy99@gmail.com</a></span><a href="../index.html#investigations">Back to all work</a></footer>
+</div>
+</body>
+</html>
