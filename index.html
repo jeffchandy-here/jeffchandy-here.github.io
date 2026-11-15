@@ -30,6 +30,7 @@
   }
   a{color:var(--accent); text-decoration:none; border-bottom:1px solid transparent;}
   a:hover{border-bottom-color:var(--accent);}
+  a:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
   .wrap{max-width:820px; margin:0 auto; padding:0 24px;}
   h1,h2,h3{font-family:'Space Grotesk',sans-serif; font-weight:600; margin:0;}
   .mono{font-family:'IBM Plex Mono',monospace;}
@@ -80,7 +81,7 @@
   section h2{font-size:1.3rem; margin-bottom:6px;}
   section > p.lede{color:var(--muted); margin-top:0; margin-bottom:22px; max-width:62ch;}
 
-  /* case files (projects) */
+  /* case files (projects + investigations) */
   .case{
     border-left:2px solid var(--line);
     padding:6px 0 8px 20px;
@@ -102,6 +103,7 @@
   }
   .case p{margin:10px 0 0; color:#3a3d42; font-size:14.5px; max-width:64ch;}
   .case .metric{margin-top:10px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--accent); background:var(--accent-soft); display:inline-block; padding:4px 9px; border-radius:3px;}
+  .case .readmore{display:inline-block; margin-top:10px; margin-left:10px; font-family:'IBM Plex Mono',monospace; font-size:12px;}
 
   /* experience */
   .job{margin-bottom:26px;}
@@ -120,6 +122,7 @@
     width:7px; height:7px; border-radius:50%; background:var(--ink);
   }
   .cert.pending::before{background:var(--bg); border:1.5px solid var(--muted);}
+  .cert.planned::before{background:var(--bg); border:1.5px dashed var(--muted);}
   .cert-year{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted);}
   .cert-name{font-weight:500; margin-top:2px;}
   .cert-issuer{font-size:13.5px; color:var(--muted);}
@@ -140,6 +143,9 @@
     .skillgrid{grid-template-columns:1fr;}
     header{padding:36px 0 28px;}
     header h1{font-size:2rem;}
+    nav.topnav .brand{display:none;}
+    nav.topnav .navwrap{justify-content:center;}
+    .case .readmore{margin-left:0; display:block;}
   }
 </style>
 </head>
@@ -150,6 +156,7 @@
     <div class="brand">JEFF CHANDY</div>
     <div class="links">
       <a href="#projects">Projects</a>
+      <a href="#investigations">Investigations</a>
       <a href="#experience">Experience</a>
       <a href="#certs">Certs</a>
       <a href="#skills">Skills</a>
@@ -287,6 +294,95 @@
       <div class="metric">Impact: ~10 min cut to ~2 min per reported phishing email</div>
     </div>
 
+    <div class="case open">
+      <div class="case-head">
+        <h3><a href="cases/case-05-vuln-pipeline.html">Cloud vulnerability case pipeline</a></h3>
+        <span class="case-id mono">CASE-05</span>
+      </div>
+      <div class="case-tags">
+        <span class="tag">Wiz</span>
+        <span class="tag">Torq</span>
+        <span class="tag">Jira</span>
+        <span class="tag">Slack</span>
+      </div>
+      <p>
+        An automated flow for Wiz findings: Torq enriches each issue with resource, owner, severity and
+        exposure, opens a Jira ticket per cloud resource and a Slack channel with the owners, and closes the
+        case when Wiz confirms the fix.
+      </p>
+      <div class="metric">Impact: case creation, ticketing and owner notification fully automatic</div>
+      <a class="readmore" href="cases/case-05-vuln-pipeline.html">Read the case file</a>
+    </div>
+
+  </section>
+
+  <hr class="rule">
+
+  <section id="investigations">
+    <div class="seclabel">case files — investigations</div>
+    <h2>Investigations</h2>
+    <p class="lede">Recent incidents I worked, written up step by step. Names, systems and internal details are removed.</p>
+
+    <div class="case open">
+      <div class="case-head">
+        <h3><a href="cases/ir-01-endpoint-infostealer.html">Fake AI tool download to fileless infostealer</a></h3>
+        <span class="case-id mono">IR-01</span>
+      </div>
+      <div class="case-tags">
+        <span class="tag">EDR telemetry</span>
+        <span class="tag">Process tree analysis</span>
+        <span class="tag">ClickFix</span>
+        <span class="tag">mshta</span>
+      </div>
+      <p>
+        An employee pasted a command from a fake AI tool install page, launching an in-memory payload.
+        Rebuilt the full attack chain from EDR telemetry, ruled out hands-on-keyboard activity and credential
+        dumping, scoped what was exposed, and drove containment, credential rotation and new detections.
+      </p>
+      <div class="metric">Outcome: contained, credentials rotated, detections added</div>
+      <a class="readmore" href="cases/ir-01-endpoint-infostealer.html">Read the case file</a>
+    </div>
+
+    <div class="case open">
+      <div class="case-head">
+        <h3><a href="cases/ir-02-api-idor.html">API IDOR exposing customer data: proving who else used it</a></h3>
+        <span class="case-id mono">IR-02</span>
+      </div>
+      <div class="case-tags">
+        <span class="tag">API gateway logs</span>
+        <span class="tag">BigQuery</span>
+        <span class="tag">Bug bounty</span>
+        <span class="tag">GDPR</span>
+      </div>
+      <p>
+        Any logged-in user could read other customers' records through a commerce API. Found the right log
+        source, validated its fields against a known event, established the real exposure window, and
+        attributed every cross-user read to support the legal notification decision.
+      </p>
+      <div class="metric">Outcome: all other access attributed; no notification required</div>
+      <a class="readmore" href="cases/ir-02-api-idor.html">Read the case file</a>
+    </div>
+
+    <div class="case open">
+      <div class="case-head">
+        <h3><a href="cases/ir-03-bug-bounty-rce.html">Bug bounty RCE: was it exploited before the report?</a></h3>
+        <span class="case-id mono">IR-03</span>
+      </div>
+      <div class="case-tags">
+        <span class="tag">WAF logs</span>
+        <span class="tag">EDR</span>
+        <span class="tag">Cloud audit logs</span>
+        <span class="tag">Bug bounty</span>
+      </div>
+      <p>
+        A researcher reported remote code execution on a public web app. Turned the proof of concept into
+        a search fingerprint, separated the researcher's traffic, and checked edge logs, hosts and cloud
+        activity across the whole vulnerable period for anyone else using it.
+      </p>
+      <div class="metric">Outcome: exploitation question answered, with its limits stated</div>
+      <a class="readmore" href="cases/ir-03-bug-bounty-rce.html">Read the case file</a>
+    </div>
+
   </section>
 
   <hr class="rule">
@@ -306,6 +402,7 @@
         <li>Own SecOps automation in Torq (XSOAR): built out a wide set of playbooks covering both threat response and issue remediation, not just alert triage</li>
         <li>Lead Terraform-based log onboarding pipelines — infrastructure-as-code work that overlaps directly with InfraSec, used to scale what SecOps can ingest and act on</li>
         <li>Own SecOps-scoped vulnerability triage in Wiz end-to-end: identify active cloud threats, set up and run remediation automation, coordinate with InfraSec, and escalate confirmed compromises into formal IR</li>
+        <li>Lead incident investigations end to end, including endpoint compromises, bug bounty reports involving customer data, and cloud exposures</li>
         <li>Support PCI compliance audits — field auditor questions on security controls directly, no findings raised against my areas to date</li>
         <li>Build and ship IR tooling (credential verification, AI-assisted alert triage) and author the SOPs for team-wide adoption</li>
       </ul>
@@ -318,6 +415,7 @@
       </div>
       <div class="job-org">FICO</div>
       <ul>
+        <li>Joined as a founding member of a new three-person threat intelligence team, then started FICO's threat hunting function as its sole member and grew it into a team of five</li>
         <li>Ran proactive threat hunts across MDATP, Cortex XDR, and Splunk</li>
         <li>Authored detection rules using MITRE ATT&amp;CK and TaHiTI to strengthen visibility across the environment</li>
         <li>Built threat intelligence from OSINT, TECHINT, and darknet sources</li>
@@ -335,6 +433,11 @@
     <div class="seclabel">certifications</div>
     <h2>Certifications &amp; path forward</h2>
     <div class="certs">
+      <div class="cert planned">
+        <div class="cert-year mono">planned</div>
+        <div class="cert-name">CISSP — Certified Information Systems Security Professional</div>
+        <div class="cert-issuer">ISC2</div>
+      </div>
       <div class="cert pending">
         <div class="cert-year mono">in progress</div>
         <div class="cert-name">GCIH — GIAC Certified Incident Handler</div>
